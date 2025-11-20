@@ -1,73 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Expenses Manager</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Manager</title>
 
-    <!-- Removed Chart.js (no JS allowed) -->
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- ChartJS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
-    <!-- 🔮 Animated Background Layers -->
-    <div class="animated-bg"></div>
-    <div class="floating-pattern"></div>
 
-    <header class="header">
-        <h1>💸 Personal Expenses Manager</h1>
-        <p class="subtitle">Track your spending smartly and stylishly!</p>
-    </header>
+  <!-- Animated Backgrounds -->
+  <div class="bg-gradient"></div>
+  <div class="bg-noise"></div>
+  <div class="bg-blobs">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
 
-    <main class="container">
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container">
+      <div class="brand">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" class="brand-icon">
+          <path d="M4 7h16M4 12h16M4 17h16"/>
+        </svg>
+        <div>
+          <h1>Expense Manager</h1>
+          <div class="tag">Track • Analyze • Control</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#">Home</a>
+        <a href="#features">Features</a>
+      </nav>
+    </div>
+  </header>
 
-        <!-- ✏️ Form (only static now, no JS functionality) -->
-        <section class="card form-card">
-            <h2>Add a New Expense</h2>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <h2>Track Your Expenses Easily</h2>
+      <p class="lead">Add expenses, generate charts, and understand your spending habits.</p>
+      <a href="#dashboard" class="btn-primary">Get Started</a>
+    </div>
+  </section>
 
-            <!-- No JavaScript => form cannot work on static HTML -->
-            <form>
-                <label for="category">Category:</label>
-                <select id="category" name="category">
-                    <option value="Food">🍔 Food</option>
-                    <option value="Transport">🚗 Transport</option>
-                    <option value="Entertainment">🎬 Entertainment</option>
-                    <option value="Utilities">💡 Utilities</option>
-                    <option value="others">✨ Others</option>
-                </select>
-                
-                <!-- Custom category cannot auto-show anymore without JS -->
-                <label for="custom_category">Custom Category:</label>
-                <input type="text" id="custom_category" name="custom_category" placeholder="Describe your category">
+  <!-- Dashboard -->
+  <section id="dashboard" class="dashboard-wrap">
+    <div class="cards-grid">
 
-                <label for="amount">Amount:</label>
-                <input type="number" id="amount" name="amount" step="0.01" required>
+      <!-- Card 1: Expense Form -->
+      <div class="card">
+        <h3>Add Expense</h3>
 
-                <!-- Buttons are now purely visual -->
-                <button type="button" class="btn add-btn">+ Add Expense</button>
-                <button type="button" class="btn clear-btn">🧹 Clear All</button>
-            </form>
-        </section>
+        <form id="expenseForm" class="form">
 
-        <!-- 📊 Chart (removed because JS is required) -->
-        <section class="card chart-card">
-            <h2>Spending Overview</h2>
-            <p style="text-align:center; opacity:0.7;">
-                Chart is unavailable because JavaScript was removed.
-            </p>
-        </section>
+          <select id="category" class="input" required>
+            <option value="" disabled selected>Select Category</option>
+            <option value="Food">Food</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Transport">Transport</option>
+            <option value="Bills">Bills</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="others">Others (Custom)</option>
+          </select>
 
-        <!-- 📘 Summary (also static now) -->
-        <section class="card summary-card">
-            <h2>Expense Summary</h2>
-            <p style="opacity:0.7;">Summary requires JavaScript or backend.</p>
-        </section>
+          <input
+            type="text"
+            id="custom_category"
+            class="input"
+            placeholder="Enter custom category"
+            style="display:none;"
+          >
 
-    </main>
+          <input type="number" id="amount" class="input" placeholder="Amount (₹)" required>
 
-    <footer class="footer">
-        <p>✨ Designed with ❤️ by <strong>You</strong></p>
-    </footer>
+          <div class="form-actions">
+            <button type="submit" class="btn add">Add</button>
+            <button type="button" class="btn clear" id="clearBtn">Clear All</button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Card 2: Chart -->
+      <div class="card">
+        <h3>Expense Chart</h3>
+        <div class="chart-wrap">
+          <canvas id="expenseChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Card 3: Summary -->
+      <div class="card">
+        <h3>Summary</h3>
+        <div id="expenseSummary" class="summary-list"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="features-section">
+    <h2>Features</h2>
+
+    <div class="features-grid">
+
+      <div class="feature">
+        <div class="feature-media" style="background-image:url('https://images.unsplash.com/photo-1556155092-8707de31f9c4?auto=format&fit=crop&w=1000');"></div>
+        <h4>Smart Tracking</h4>
+        <p>Easily categorize and store your daily expenses.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-media" style="background-image:url('https://images.unsplash.com/photo-1581091012184-5c8b88ddc9bf?auto=format&fit=crop&w=1000');"></div>
+        <h4>Live Analytics</h4>
+        <p>Visual charts update instantly with each new record.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-media" style="background-image:url('https://images.unsplash.com/photo-1545239705-1569a31c6856?auto=format&fit=crop&w=1000');"></div>
+        <h4>Local Storage</h4>
+        <p>Your data stays saved even after refreshing the page.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    © <span id="year"></span> Expense Manager • Made with ❤️
+  </footer>
+
+  <!-- JS Link -->
+  <script src="script.js"></script>
 
 </body>
 </html>
-
