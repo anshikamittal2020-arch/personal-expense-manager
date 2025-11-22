@@ -4,10 +4,10 @@
     <form action="/save" method="POST" class="form-box">
 
         <label>Amount:</label>
-        <input type="number" name="amount" step="0.01">
+        <input type="number" name="amount" step="0.01" required>
 
         <label>Category:</label>
-        <select name="category">
+        <select name="category" required>
             <option>Select Category</option>
             <option>Food</option>
             <option>Travel</option>
@@ -22,6 +22,9 @@
 
         <label>Note:</label>
         <input type="text" name="note">
+
+        <label>Date:</label>
+        <input type="date" name="date">
 
         <button type="submit">Save</button>
     </form>
