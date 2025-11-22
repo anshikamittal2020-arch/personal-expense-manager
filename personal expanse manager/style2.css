@@ -1,3 +1,19 @@
+/* Fade-in animation for pages */
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 0.7s forwards ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 /* -------- GLOBAL -------- */
 body {
     margin: 0;
@@ -22,10 +38,25 @@ body {
     text-decoration: none;
     color: black;
     font-size: 16px;
+    padding: 6px 4px;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+}
+
+.sidebar a:hover {
+    padding-left: 12px;
+    background: #f3e8ff;
+    color: #6a0dad;
 }
 
 .sidebar h2 {
     margin-bottom: 20px;
+}
+.sidebar a.active {
+    background: #e8d3ff;
+    color: #6a0dad;
+    font-weight: bold;
+    padding-left: 12px;
 }
 
 /* Shift the whole content area to the right so sidebar doesn't overlap */
@@ -48,18 +79,12 @@ body {
 }
 
 .home-card {
-    width: 280px;
-    padding: 25px;
-    background: white;
-    border-radius: 14px;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.1);
-    text-decoration: none;
-    color: black;
-    transition: 0.2s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .home-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
 }
 
 /* Home summary (total) */
@@ -172,3 +197,26 @@ button:hover {
 .action-link:hover {
     text-decoration: underline;
 }
+.home-grid {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+    justify-content: center;
+}
+
+.home-card {
+    width: 380px;
+    padding: 25px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: black;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.home-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
