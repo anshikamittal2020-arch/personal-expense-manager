@@ -11,8 +11,6 @@ body {
     height: 100vh;
     padding: 30px;
     background: white;
-
-    /* Fix the top gap */
     position: fixed;
     top: 0;
     left: 0;
@@ -30,10 +28,15 @@ body {
     margin-bottom: 20px;
 }
 
-/* -------- MAIN CONTENT -------- */
-.main-content {
+/* Shift the whole content area to the right so sidebar doesn't overlap */
+.content {
     margin-left: 320px;
     padding: 40px;
+}
+
+/* main-content is the inner wrapper */
+.main-content {
+    padding: 20px;
 }
 
 /* -------- HOME PAGE CARDS -------- */
@@ -41,7 +44,7 @@ body {
     display: flex;
     gap: 30px;
     margin-top: 30px;
-    justify-content: center;  /* ADD THIS */
+    justify-content: center;
 }
 
 .home-card {
@@ -57,6 +60,17 @@ body {
 
 .home-card:hover {
     transform: translateY(-3px);
+}
+
+/* Home summary (total) */
+.home-summary {
+    width: 80%;
+    margin: 10px auto;
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    text-align: center;
 }
 
 /* -------- FORMS -------- */
@@ -77,54 +91,10 @@ button {
 }
 
 button:hover {
-    opacity: 0.9;
+    opacity: 0.95;
 }
 
-/* -------- EXPENSE TABLE -------- */
-.styled-table {
-    width: 80%;
-    margin: 40px auto;
-    border-collapse: collapse;
-    font-size: 16px;
-    background: white;
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.1);
-}
-
-.styled-table thead tr {
-    background-color: #b37bd6;
-    color: #ffffff;
-    text-align: left;
-    font-weight: bold;
-}
-
-.styled-table th,
-.styled-table td {
-    padding: 12px 15px;
-}
-
-/* REMOVE STRIPING — ALL ROWS WHITE */
-.styled-table tbody tr {
-    background: white !important;
-    border-bottom: 1px solid #dddddd;
-}
-
-.styled-table tbody tr:last-of-type {
-    border-bottom: none !important;
-}
-
-/* -------- ACTION LINKS -------- */
-.action-link {
-    color: #6a0dad;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.action-link:hover {
-    text-decoration: underline;
-}
-/* ----- Add Expense Page Card ----- */
+/* ----- Add/Edit Page Card ----- */
 .form-container {
     background: white;
     width: 450px;
@@ -157,10 +127,48 @@ button:hover {
     width: 120px;
     align-self: center;
 }
-.home-wrapper {
-    padding: 20px;
+
+/* -------- EXPENSE TABLE -------- */
+.styled-table {
+    width: 80%;
+    margin: 40px auto;
+    border-collapse: collapse;
+    font-size: 16px;
+    background: white;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.1);
 }
-.content {
-    margin-left: 320px;
-    padding: 40px;
+
+.styled-table thead tr {
+    background-color: #b37bd6;
+    color: #ffffff;
+    text-align: left;
+    font-weight: bold;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+}
+
+/* ALL ROWS WHITE */
+.styled-table tbody tr {
+    background: white !important;
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: none !important;
+}
+
+/* -------- ACTION LINKS -------- */
+.action-link {
+    color: #6a0dad;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.action-link:hover {
+    text-decoration: underline;
 }
