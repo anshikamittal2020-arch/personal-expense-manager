@@ -219,4 +219,33 @@ button:hover {
     transform: translateY(-6px) scale(1.02);
     box-shadow: 0 12px 24px rgba(0,0,0,0.15);
 }
+.search-form {
+    margin: 20px auto;
+    width: 80%;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+.search-form input {
+    padding: 10px;
+    width: 250px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.search-form button {
+    padding: 10px 18px;
+    background: #9d59ce;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.search-form button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
 
