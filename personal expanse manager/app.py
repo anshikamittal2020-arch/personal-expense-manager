@@ -1,190 +1,218 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_file
 import sqlite3
-from datetime import date, timedelta
-import matplotlib.pyplot as plt
-import os
+from flask import Flask, request, redirect
+from datetime import date
 
 app = Flask(__name__)
-app.secret_key = "secret123"
 
+DB = "expenses.db"
 
-# -------------------- DATABASE --------------------
-def connect_db():
-    return sqlite3.connect("expenses.db")
+# ---------- Helper: Ensure date column exists ----------
+def ensure_date_column():
+    conn = sqlite3.connect(DB)
+    cur = conn.cursor()
+    cur.execute("PRAGMA table_info(expenses)")
+    cols = [r[1] for r in cur.fetchall()]  # column names
+    if "date" not in cols:
+        # safe ALTER TABLE to add a date TEXT column
+        cur.execute("ALTER TABLE expenses ADD COLUMN date TEXT")
+        conn.commit()
+    conn.close()
 
-def init_db():
-    db = connect_db()
-    
-    db.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        password TEXT
+# ---------- Helper: Render a Page ----------
+def render_page(page_file, content=""):
+    # start / page / end files are expected under pages/
+    with open("pages/layout_start.html") as f:
+        start = f.read()
+
+    with open(f"pages/{page_file}") as f:
+        page = f.read()
+
+    with open("pages/layout_end.html") as f:
+        end = f.read()
+
+    # We replace "{{content}}" inside the page file with content HTML
+    return start + page.replace("{{content}}", content) + end
+
+# Ensure DB has date column when app starts
+ensure_date_column()
+
+# ---------- HOME ----------
+@app.route("/")
+def home():
+    conn = sqlite3.connect(DB)
+    cur = conn.cursor()
+
+    # total expenses
+    cur.execute("SELECT SUM(CAST(amount AS REAL)) FROM expenses")
+    s = cur.fetchone()[0]
+    total = float(s) if s is not None else 0.0
+
+    conn.close()
+
+    summary_html = f"""
+    <div class="home-summary">
+        <h3>Total Spending: ₹{total:.2f}</h3>
+    </div>
+    """
+
+    return render_page("home.html", summary_html)
+
+# ---------- ADD PAGE ----------
+@app.route("/add")
+def add_page():
+    return render_page("add.html")
+
+# ---------- SAVE EXPENSE ----------
+@app.route("/save", methods=["POST"])
+def save_expense():
+    amount = request.form.get("amount", "").strip()
+    category = request.form.get("category", "").strip()
+    custom = request.form.get("custom_category", "").strip()
+
+    if category == "Other" and custom:
+        category = custom
+
+    note = request.form.get("note", "").strip()
+    # date input (format YYYY-MM-DD). If empty, use today's date.
+    expense_date = request.form.get("date", "").strip()
+    if not expense_date:
+        expense_date = date.today().isoformat()
+
+    conn = sqlite3.connect(DB)
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO expenses (amount, category, note, date) VALUES (?, ?, ?, ?)",
+        (amount, category, note, expense_date),
     )
-    """)
+    conn.commit()
+    conn.close()
 
-    db.execute("""
-    CREATE TABLE IF NOT EXISTS expenses (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        category TEXT,
-        amount REAL,
-        spent_on TEXT,
-        note TEXT
+    return redirect("/view")
+
+# ---------- VIEW PAGE ----------
+@app.route("/view")
+def view_page():
+    conn = sqlite3.connect(DB)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, amount, category, note, date FROM expenses")
+    rows = cursor.fetchall()
+    conn.close()
+
+    table = """
+    <h2>All Expenses</h2>
+    <table class='styled-table'>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Amount</th>
+            <th>Category</th>
+            <th>Note</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+    """
+
+    for r in rows:
+        # r = (id, amount, category, note, date)
+        dt = r[4] if r[4] else "-"
+        table += f"""
+        <tr>
+            <td>{r[0]}</td>
+            <td>{r[1]}</td>
+            <td>{r[2]}</td>
+            <td>{r[3]}</td>
+            <td>{dt}</td>
+            <td>
+                <a class='action-link' href='/edit/{r[0]}'>Edit</a> |
+                <a class='action-link' href='/delete/{r[0]}'>Delete</a>
+            </td>
+        </tr>
+        """
+
+    table += "</tbody></table>"
+
+    return render_page("view.html", table)
+
+# ---------- EDIT PAGE ----------
+@app.route("/edit/<int:id>")
+def edit_expense(id):
+    conn = sqlite3.connect(DB)
+    cur = conn.cursor()
+    cur.execute("SELECT id, amount, category, note, date FROM expenses WHERE id=?", (id,))
+    row = cur.fetchone()
+    conn.close()
+
+    # default values if something missing
+    amount = row[1] if row and len(row) > 1 else ""
+    category = row[2] if row and len(row) > 2 else ""
+    note = row[3] if row and len(row) > 3 else ""
+    expense_date = row[4] if row and len(row) > 4 and row[4] else date.today().isoformat()
+
+    html = f"""
+    <h2>Edit Expense</h2>
+
+    <div class="form-container">
+    <form action="/update/{id}" method="POST" class="form-box">
+
+        <label>Amount:</label>
+        <input type="number" step="0.01" name="amount" value="{amount}">
+
+        <label>Category:</label>
+        <select name="category">
+            <option {'selected' if category=='Food' else ''}>Food</option>
+            <option {'selected' if category=='Travel' else ''}>Travel</option>
+            <option {'selected' if category=='Shopping' else ''}>Shopping</option>
+            <option {'selected' if category=='Bills' else ''}>Bills</option>
+            <option {'selected' if category=='Health' else ''}>Health</option>
+            <option {'selected' if category=='Other' else ''}>Other</option>
+        </select>
+
+        <label>Note:</label>
+        <input type="text" name="note" value="{note}">
+
+        <label>Date:</label>
+        <input type="date" name="date" value="{expense_date}">
+
+        <button type="submit">Update</button>
+    </form>
+    </div>
+    """
+
+    return render_page("view.html", html)
+
+# ---------- UPDATE EXPENSE ----------
+@app.route("/update/<int:id>", methods=["POST"])
+def update_expense(id):
+    amount = request.form.get("amount", "").strip()
+    category = request.form.get("category", "").strip()
+    note = request.form.get("note", "").strip()
+    expense_date = request.form.get("date", "").strip()
+    if not expense_date:
+        expense_date = date.today().isoformat()
+
+    conn = sqlite3.connect(DB)
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE expenses SET amount=?, category=?, note=?, date=? WHERE id=?",
+        (amount, category, note, expense_date, id)
     )
-    """)
+    conn.commit()
+    conn.close()
 
-    db.commit()
-    db.close()
+    return redirect("/view")
 
-init_db()
-
-
-# -------------------- LOGIN --------------------
-@app.route("/", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = request.form["username"]
-        pwd = request.form["password"]
-
-        db = connect_db()
-        user = db.execute(
-            "SELECT id FROM users WHERE username=? AND password=?",
-            (username, pwd)
-        ).fetchone()
-        db.close()
-
-        if user:
-            session["user_id"] = user[0]
-            return redirect("/dashboard")
-        return "Invalid login"
-
-    return render_template("login.html")
-
-
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        username = request.form["username"]
-        pwd = request.form["password"]
-
-        try:
-            db = connect_db()
-            db.execute("INSERT INTO users(username, password) VALUES(?,?)",
-                       (username, pwd))
-            db.commit()
-            db.close()
-            return redirect("/")
-        except:
-            return "User already exists."
-
-    return render_template("register.html")
-
-
-# -------------------- DASHBOARD --------------------
-@app.route("/dashboard", methods=["GET", "POST"])
-def dashboard():
-    if "user_id" not in session:
-        return redirect("/")
-
-    if request.method == "POST":
-        category = request.form["category"]
-        amount = float(request.form["amount"])
-        spent_on = request.form["spent_on"]
-        note = request.form["note"]
-
-        db = connect_db()
-        db.execute("""
-            INSERT INTO expenses (user_id, category, amount, spent_on, note)
-            VALUES (?, ?, ?, ?, ?)
-        """, (session["user_id"], category, amount, spent_on, note))
-        db.commit()
-        db.close()
-
-        return redirect("/dashboard")
-
-    db = connect_db()
-    expenses = db.execute("""
-        SELECT id, category, amount, spent_on, note
-        FROM expenses WHERE user_id=?
-        ORDER BY spent_on DESC
-    """, (session["user_id"],)).fetchall()
-    db.close()
-
-    return render_template("dashboard.html", expenses=expenses)
-
-
-# -------------------- DELETE EXPENSE --------------------
+# ---------- DELETE ----------
 @app.route("/delete/<int:id>")
 def delete_expense(id):
-    db = connect_db()
-    db.execute("DELETE FROM expenses WHERE id=?", (id,))
-    db.commit()
-    db.close()
-    return redirect("/dashboard")
+    conn = sqlite3.connect(DB)
+    cur = conn.cursor()
+    cur.execute("DELETE FROM expenses WHERE id=?", (id,))
+    conn.commit()
+    conn.close()
 
-
-# ----------------- DAILY / WEEKLY / MONTHLY FILTER -----------------
-def get_period_start(period):
-    today = date.today()
-    if period == "daily":
-        return today
-    elif period == "weekly":
-        return today - timedelta(days=today.weekday())
-    elif period == "monthly":
-        return today.replace(day=1)
-    return today
-
-
-@app.route("/summary/<period>")
-def summary(period):
-    start_date = get_period_start(period)
-
-    db = connect_db()
-    rows = db.execute("""
-        SELECT category, amount, spent_on
-        FROM expenses
-        WHERE user_id=? AND date(spent_on) >= date(?)
-    """, (session["user_id"], start_date)).fetchall()
-    db.close()
-
-    totals = {}
-    for cat, amt, _ in rows:
-        totals[cat] = totals.get(cat, 0) + amt
-
-    return render_template("summary.html", period=period, totals=totals)
-
-
-# -------------------- CATEGORY GRAPH --------------------
-@app.route("/graph/<period>")
-def graph(period):
-    start_date = get_period_start(period)
-
-    db = connect_db()
-    rows = db.execute("""
-        SELECT category, amount FROM expenses
-        WHERE user_id=? AND date(spent_on) >= date(?)
-    """, (session["user_id"], start_date)).fetchall()
-    db.close()
-
-    totals = {}
-    for cat, amt in rows:
-        totals[cat] = totals.get(cat, 0) + amt
-
-    # matplotlib graph
-    plt.figure(figsize=(6,4))
-    plt.bar(totals.keys(), totals.values())
-    plt.title(f"{period.capitalize()} Expenses")
-    plt.xlabel("Category")
-    plt.ylabel("Amount")
-    plt.tight_layout()
-
-    graph_path = "static/graph.png"
-    plt.savefig(graph_path)
-    plt.close()
-
-    return send_file(graph_path, mimetype="image/png")
-
+    return redirect("/view")
 
 if __name__ == "__main__":
     app.run(debug=True)
