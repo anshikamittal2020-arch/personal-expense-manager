@@ -8,9 +8,11 @@
 <body>
     <div class="sidebar">
         <h2>Expense Manager</h2>
-        <a href="/">Home</a>
-        <a href="/add">Add Expense</a>
-        <a href="/view">View Expenses</a>
+        <a href="/" class="{{ 'active' if request.path == '/' else '' }}">Home</a>
+        <a href="/add" class="{{ 'active' if request.path == '/add' else '' }}">Add Expense</a>
+        <a href="/view" class="{{ 'active' if request.path.startswith('/view') else '' }}">View Expenses</a>
+
     </div>
 
-    <div class="content">
+   <div class="content fade-in">
+
