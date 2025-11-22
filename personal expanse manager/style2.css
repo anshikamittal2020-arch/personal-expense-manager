@@ -248,4 +248,26 @@ button:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
+.sort-buttons {
+    width: 80%;
+    margin: 10px auto 20px;
+    display: flex;
+    gap: 15px;
+}
+
+.sort-btn {
+    padding: 8px 16px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    text-decoration: none;
+    color: #6a0dad;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.sort-btn:hover {
+    transform: scale(1.05);
+    background: #f3e8ff;
+}
 
