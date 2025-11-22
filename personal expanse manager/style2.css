@@ -1,0 +1,166 @@
+/* -------- GLOBAL -------- */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #F3E8FF;
+}
+
+/* -------- SIDEBAR -------- */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    padding: 30px;
+    background: white;
+
+    /* Fix the top gap */
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.sidebar a {
+    display: block;
+    margin-top: 10px;
+    text-decoration: none;
+    color: black;
+    font-size: 16px;
+}
+
+.sidebar h2 {
+    margin-bottom: 20px;
+}
+
+/* -------- MAIN CONTENT -------- */
+.main-content {
+    margin-left: 320px;
+    padding: 40px;
+}
+
+/* -------- HOME PAGE CARDS -------- */
+.home-grid {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+    justify-content: center;  /* ADD THIS */
+}
+
+.home-card {
+    width: 280px;
+    padding: 25px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: black;
+    transition: 0.2s;
+}
+
+.home-card:hover {
+    transform: translateY(-3px);
+}
+
+/* -------- FORMS -------- */
+.form-box input,
+.form-box select {
+    width: 250px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    background: #6a0dad;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* -------- EXPENSE TABLE -------- */
+.styled-table {
+    width: 80%;
+    margin: 40px auto;
+    border-collapse: collapse;
+    font-size: 16px;
+    background: white;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+}
+
+.styled-table thead tr {
+    background-color: #b37bd6;
+    color: #ffffff;
+    text-align: left;
+    font-weight: bold;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+}
+
+/* REMOVE STRIPING — ALL ROWS WHITE */
+.styled-table tbody tr {
+    background: white !important;
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: none !important;
+}
+
+/* -------- ACTION LINKS -------- */
+.action-link {
+    color: #6a0dad;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.action-link:hover {
+    text-decoration: underline;
+}
+/* ----- Add Expense Page Card ----- */
+.form-container {
+    background: white;
+    width: 450px;
+    padding: 30px;
+    margin: 20px auto;
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+}
+
+.form-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-box label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-box input,
+.form-box select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.form-box button {
+    width: 120px;
+    align-self: center;
+}
+.home-wrapper {
+    padding: 20px;
+}
+.content {
+    margin-left: 320px;
+    padding: 40px;
+}
