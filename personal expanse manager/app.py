@@ -6,35 +6,29 @@ app = Flask(__name__)
 
 DB = "expenses.db"
 
-# ---------- Helper: Ensure date column exists ----------
+# ---------- Ensure DATE column exists ----------
 def ensure_date_column():
     conn = sqlite3.connect(DB)
     cur = conn.cursor()
     cur.execute("PRAGMA table_info(expenses)")
     cols = [r[1] for r in cur.fetchall()]  # column names
     if "date" not in cols:
-        # safe ALTER TABLE to add a date TEXT column
         cur.execute("ALTER TABLE expenses ADD COLUMN date TEXT")
         conn.commit()
     conn.close()
 
-# ---------- Helper: Render a Page ----------
+ensure_date_column()
+
+# ---------- Helper: Load layout + page ----------
 def render_page(page_file, content=""):
-    # start / page / end files are expected under pages/
     with open("pages/layout_start.html") as f:
         start = f.read()
-
     with open(f"pages/{page_file}") as f:
         page = f.read()
-
     with open("pages/layout_end.html") as f:
         end = f.read()
 
-    # We replace "{{content}}" inside the page file with content HTML
     return start + page.replace("{{content}}", content) + end
-
-# Ensure DB has date column when app starts
-ensure_date_column()
 
 # ---------- HOME ----------
 @app.route("/")
@@ -42,7 +36,7 @@ def home():
     conn = sqlite3.connect(DB)
     cur = conn.cursor()
 
-    # total expenses
+    # Total spending
     cur.execute("SELECT SUM(CAST(amount AS REAL)) FROM expenses")
     s = cur.fetchone()[0]
     total = float(s) if s is not None else 0.0
@@ -73,7 +67,6 @@ def save_expense():
         category = custom
 
     note = request.form.get("note", "").strip()
-    # date input (format YYYY-MM-DD). If empty, use today's date.
     expense_date = request.form.get("date", "").strip()
     if not expense_date:
         expense_date = date.today().isoformat()
@@ -89,17 +82,42 @@ def save_expense():
 
     return redirect("/view")
 
-# ---------- VIEW PAGE ----------
+# ---------- VIEW PAGE (WITH SEARCH) ----------
 @app.route("/view")
 def view_page():
+    search = request.args.get("search", "").strip()
+
     conn = sqlite3.connect(DB)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, amount, category, note, date FROM expenses")
+
+    if search:
+        query = """
+            SELECT id, amount, category, note, date 
+            FROM expenses 
+            WHERE amount LIKE ? 
+            OR category LIKE ? 
+            OR note LIKE ?
+            OR date LIKE ?
+        """
+        wildcard = f"%{search}%"
+        cursor.execute(query, (wildcard, wildcard, wildcard, wildcard))
+    else:
+        cursor.execute("SELECT id, amount, category, note, date FROM expenses")
+
     rows = cursor.fetchall()
     conn.close()
 
-    table = """
+    # Search bar
+    search_html = f"""
+    <form method="GET" action="/view" class="search-form">
+        <input type="text" name="search" placeholder="Search..." value="{search}">
+        <button type="submit">Search</button>
+    </form>
+    """
+
+    table = f"""
     <h2>All Expenses</h2>
+    {search_html}
     <table class='styled-table'>
         <thead>
         <tr>
@@ -115,7 +133,6 @@ def view_page():
     """
 
     for r in rows:
-        # r = (id, amount, category, note, date)
         dt = r[4] if r[4] else "-"
         table += f"""
         <tr>
@@ -144,11 +161,10 @@ def edit_expense(id):
     row = cur.fetchone()
     conn.close()
 
-    # default values if something missing
-    amount = row[1] if row and len(row) > 1 else ""
-    category = row[2] if row and len(row) > 2 else ""
-    note = row[3] if row and len(row) > 3 else ""
-    expense_date = row[4] if row and len(row) > 4 and row[4] else date.today().isoformat()
+    amount = row[1]
+    category = row[2]
+    note = row[3]
+    expense_date = row[4] if row[4] else date.today().isoformat()
 
     html = f"""
     <h2>Edit Expense</h2>
@@ -182,13 +198,14 @@ def edit_expense(id):
 
     return render_page("view.html", html)
 
-# ---------- UPDATE EXPENSE ----------
+# ---------- UPDATE ----------
 @app.route("/update/<int:id>", methods=["POST"])
 def update_expense(id):
     amount = request.form.get("amount", "").strip()
     category = request.form.get("category", "").strip()
     note = request.form.get("note", "").strip()
     expense_date = request.form.get("date", "").strip()
+
     if not expense_date:
         expense_date = date.today().isoformat()
 
@@ -213,6 +230,7 @@ def delete_expense(id):
     conn.close()
 
     return redirect("/view")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
